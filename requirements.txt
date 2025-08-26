@@ -1,0 +1,5 @@
+# generated from manifests external_dependencies
+beautifulsoup4
+bleach
+oauthlib
+requests-oauthlib
