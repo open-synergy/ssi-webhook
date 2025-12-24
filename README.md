@@ -18,7 +18,7 @@ Available addons
 ----------------
 addon | version | maintainers | summary
 --- | --- | --- | ---
-[ssi_webhook](ssi_webhook/) | 14.0.1.0.0 |  | SSI - Webhook
+[ssi_webhook](ssi_webhook/) | 14.0.1.1.0 |  | SSI - Webhook
 
 [//]: # (end addons)
 
