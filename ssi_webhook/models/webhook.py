@@ -2,6 +2,7 @@
 # Copyright 2025 PT. Simetri Sinergi Indonesia
 # License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl).
 import base64
+import hashlib
 import json
 import logging
 import re
@@ -216,17 +217,23 @@ result = {}"""
     )
 
     @api.model
+    def compute_hash(self, value):
+        return hashlib.sha256(value.encode("utf-8")).hexdigest()
+
+    @api.model
     def _get_localdict(self):
         model = self.env[self.model_name]
         active_id = self.env.context.get("active_id", False)
         active_ids = self.env.context.get("active_ids", [])
         return {
             "self": self,
+            "env": self.env,
             "model": model,
             "record": model.browse(active_id),
             "records": model.browse(active_ids),
             "uid": self._uid,
             "user": self.env.user,
+            "company": self.env.company,
             "time": tools.safe_eval.time,
             "datetime": tools.safe_eval.datetime,
             "dateutil": tools.safe_eval.dateutil,
@@ -424,16 +431,19 @@ result = {}"""
         if resp is None:
             return None
         if self.use_response_code and self.python_response_code:
-            resp_context = eval_context.copy()
-            resp_context.update({"response": resp})
-            safe_eval(
-                self.python_response_code.strip(),
-                resp_context,
-                mode="exec",
-                nocopy=True,
-            )
-            if "result" in resp_context:
-                return resp_context["result"]
+            try:
+                resp_context = eval_context.copy()
+                resp_context.update({"response": resp})
+                safe_eval(
+                    self.python_response_code.strip(),
+                    resp_context,
+                    mode="exec",
+                    nocopy=True,
+                )
+                if "result" in resp_context:
+                    return resp_context["result"]
+            except Exception as err:
+                return self._limit(ustr(err))
         else:
             try:
                 hdrs = getattr(resp, "headers", None)
